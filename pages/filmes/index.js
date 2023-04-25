@@ -1,66 +1,40 @@
 import Pagina from '@/components/Pagina'
 import apiFilmes from '@/services/apiFilmes'
+import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { Button, Card, CardGroup, Col, Collapse, Container, Row } from 'react-bootstrap'
 
-const index = () => {
-
-    const [open, setOpen] = useState(false);
-    const [filmes, setFilmes] = useState([])
-
-    useEffect(() => {
-
-        apiFilmes.get('/movie/popular').then(resultado => {
-            setFilmes(resultado.data.results)
-        })
-
-    }, [])
+const index = ({ filmes }) => {
 
     return (
-
         <>
             <Pagina titulo="Filmes">
-                <Container>
 
-                    {filmes.map(item => (
-                        
-                            <Col >
+                
+
+                <Container>
+                    <Row md={3}>
+                        {filmes.map(item => (
+
+                            <Col key={item.id}>
                                 <CardGroup>
-                                    <Card className='mb-3'>
+                                    <Card className='mb-5'>
                                         <Card.Img src={'https://image.tmdb.org/t/p/w500/' + item.backdrop_path} variant='top' className='bsPrefix' />
                                         <Card.Body>
-                                            <Card.Title>{item.title}</Card.Title>
+                                            <Card.Title><h3>{item.title}</h3></Card.Title>
                                             <p >Lançamento: {item.release_date} </p>
                                             <p>Avaliação: {item.vote_average} </p>
-                                            <div>
-                                                <Button
-                                                    variant='danger '
-                                                    onClick={() => setOpen(!open)}
-                                                    aria-controls="example-collapse-text"
-                                                    aria-expanded={open}
-                                                    className='bt-'
-
-                                                >
-                                                    Detalhes
-                                                </Button>
-                                                <Collapse in={open}>
-                                                    <div className='mt-2' id="example-collapse-text">
-                                                        <p>{item.overview}</p>
-
-                                                    </div>
-
-                                                </Collapse>
-                                            </div>
+                                            <Link href={'/filmes/' + item.id} className='btn btn-dark'>Detalhes</Link>
 
                                         </Card.Body>
                                     </Card>
                                 </CardGroup>
 
                             </Col>
-                        
-                    ))}
 
+                        ))}
 
+                    </Row>
                 </Container>
             </Pagina>
         </>
@@ -69,3 +43,13 @@ const index = () => {
 }
 
 export default index
+
+export async function getServerSideProps(context) {
+
+    const resultado = await apiFilmes.get('/movie/popular?language=pt-BR')
+    const filmes = resultado.data.results
+
+    return {
+        props: { filmes }, // will be passed to the page component as props
+    }
+}
